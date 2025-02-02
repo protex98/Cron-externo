@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atualizador Cron HumHub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex justify-center items-center min-h-screen">
+  
+  <div class="w-full max-w-3xl p-6 bg-gray-800 rounded-lg shadow-lg">
+    
+    <h1 class="text-2xl font-bold text-center mb-6">🔄 Atualizador Cron HumHub</h1>
+
+    <!-- Formulário -->
+    <form id="cronForm" class="space-y-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input type="text" id="url1" placeholder="URL 1" class="p-2 rounded bg-gray-700 text-white" required>
+        <input type="text" id="url2" placeholder="URL 2" class="p-2 rounded bg-gray-700 text-white" required>
+        <input type="text" id="url3" placeholder="URL 3" class="p-2 rounded bg-gray-700 text-white" required>
+        <input type="text" id="url4" placeholder="URL 4" class="p-2 rounded bg-gray-700 text-white" required>
+        <input type="text" id="url5" placeholder="URL 5" class="p-2 rounded bg-gray-700 text-white" required>
+        <input type="text" id="url6" placeholder="URL 6" class="p-2 rounded bg-gray-700 text-white" required>
+        <input type="text" id="url7" placeholder="URL 7" class="p-2 rounded bg-gray-700 text-white" required>
+      </div>
+
+      <button type="submit" class="w-full p-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-lg font-semibold transition-all">
+        🚀 Iniciar Cron
+      </button>
+    </form>
+
+    <!-- Relógio -->
+    <div class="text-center text-xl font-mono mt-6">
+      ⏰ <span id="clock">00:00:00</span>
+    </div>
+
+    <!-- Tabela de Status -->
+    <div class="mt-6">
+      <h2 class="text-lg font-bold mb-3">📊 Status das Atualizações</h2>
+      <table class="w-full text-left border-collapse bg-gray-700 rounded-lg overflow-hidden">
+        <thead class="bg-gray-600">
+          <tr>
+            <th class="p-2">ID</th>
+            <th class="p-2">Status</th>
+            <th class="p-2">Última Atualização</th>
+          </tr>
+        </thead>
+        <tbody id="statusTable">
+          <tr><td class="p-2">1</td><td class="p-2 text-yellow-400">Aguardando...</td><td class="p-2">Nunca</td></tr>
+          <tr><td class="p-2">2</td><td class="p-2 text-yellow-400">Aguardando...</td><td class="p-2">Nunca</td></tr>
+          <tr><td class="p-2">3</td><td class="p-2 text-yellow-400">Aguardando...</td><td class="p-2">Nunca</td></tr>
+          <tr><td class="p-2">4</td><td class="p-2 text-yellow-400">Aguardando...</td><td class="p-2">Nunca</td></tr>
+          <tr><td class="p-2">5</td><td class="p-2 text-yellow-400">Aguardando...</td><td class="p-2">Nunca</td></tr>
+          <tr><td class="p-2">6</td><td class="p-2 text-yellow-400">Aguardando...</td><td class="p-2">Nunca</td></tr>
+          <tr><td class="p-2">7</td><td class="p-2 text-yellow-400">Aguardando...</td><td class="p-2">Nunca</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('cronForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const urls = [];
+      for (let i = 1; i <= 7; i++) {
+        const url = document.getElementById(`url${i}`).value;
+        if (url) {
+          urls.push(url);
+        } else {
+          alert(`Por favor, insira a URL ${i}.`);
+          return;
+        }
+      }
+
+      ipcRenderer.send('start-cron', urls);
+      alert('⏳ Cron iniciado!');
+    });
+
+    // Relógio atualizado a cada segundo
+    setInterval(() => {
+      document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+    }, 1000);
+
+    // Atualiza a tabela com o status das requisições
+    ipcRenderer.on('update-status', (event, updateStatus) => {
+      const rows = document.querySelectorAll('#statusTable tr');
+      updateStatus.forEach((status, index) => {
+        rows[index].cells[1].textContent = status.status;
+        rows[index].cells[2].textContent = status.lastUpdated || 'Nunca';
+
+        // Cor do status
+        if (status.status.includes('sucesso')) {
+          rows[index].cells[1].classList.add('text-green-400');
+          rows[index].cells[1].classList.remove('text-yellow-400', 'text-red-400');
+        } else if (status.status.includes('Erro')) {
+          rows[index].cells[1].classList.add('text-red-400');
+          rows[index].cells[1].classList.remove('text-green-400', 'text-yellow-400');
+        } else {
+          rows[index].cells[1].classList.add('text-yellow-400');
+          rows[index].cells[1].classList.remove('text-green-400', 'text-red-400');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
