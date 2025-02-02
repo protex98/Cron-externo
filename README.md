@@ -24,7 +24,7 @@ npm instalado (já incluído no Node.js)
 
 2. Clonar o repositório
 
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/protex98/Cron-externo.git
 cd seu-repositorio
 
 3. Instalar dependências
